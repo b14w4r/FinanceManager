@@ -19,7 +19,25 @@ public class Wallet implements Serializable {
   public void addTransaction(String category, double amount, boolean isIncome) {
     transactions.putIfAbsent(category, new ArrayList<>());
     transactions.get(category).add(new Transaction(category, amount, isIncome));
+
+    if (!isIncome && budgets.containsKey(category)) {
+      double totalExpenses = transactions.get(category).stream()
+          .filter(t -> !t.isIncome())
+          .mapToDouble(Transaction::getAmount)
+          .sum();
+
+      if (totalExpenses > budgets.get(category)) {
+        System.out.printf("Warning: Budget exceeded for category '%s'. Limit: %.2f, Current Expenses: %.2f%n",
+            category, budgets.get(category), totalExpenses);
+      }
+    }
   }
+
+  // public void addTransaction(String category, double amount, boolean isIncome)
+  // {
+  // transactions.putIfAbsent(category, new ArrayList<>());
+  // transactions.get(category).add(new Transaction(category, amount, isIncome));
+  // }
 
   public void setBudget(String category, double amount) {
     budgets.put(category, amount);
@@ -61,4 +79,3 @@ public class Wallet implements Serializable {
     }
   }
 }
-
